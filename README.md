@@ -9,4 +9,4 @@ https://foldingathome.org/2020/02/27/foldinghome-takes-up-the-fight-against-covi
 This is a quick deployment that lets you run this on Kubernetes, should you have any spare cluster-power you'd like to donate. 
 
 # Install
-kubectl apply -f https://raw.githubusercontent.com/richstokes/k8s-fah/master/covid19.yaml
+```kubectl apply -f https://raw.githubusercontent.com/richstokes/k8s-fah/master/covid19.yaml```
