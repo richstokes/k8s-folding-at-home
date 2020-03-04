@@ -1,0 +1,46 @@
+# apiVersion: scheduling.k8s.io/v1
+# kind: PriorityClass
+# metadata:
+#   name: low-priority-class
+# value: 10
+# globalDefault: false
+# description: "This priority class should be used for low priority fah pods only."
+# ---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fah
+  labels:
+    app: fah  
+spec:
+  selector:
+    matchLabels:
+      app: fah
+  replicas: 2 # Set number of replicas to run - one replica per node
+  template:
+    metadata:
+      labels:
+        app: fah
+    spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app
+                operator: In
+                values:
+                - fah
+            topologyKey: "kubernetes.io/hostname"
+      containers:
+      - name: fah
+        image: "richstokes20/fah-covid:latest"
+        imagePullPolicy: Always
+        resources:
+          limits:
+            cpu: 1000m # How much CPU you wish to donate per node
+            memory: 2Gi
+          requests:
+            cpu: 100m
+            memory: 256Mi
+      # priorityClassName: low-priority-class
