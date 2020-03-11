@@ -8,10 +8,12 @@ https://foldingathome.org/2020/02/27/foldinghome-takes-up-the-fight-against-covi
 
 This is a quick deployment that lets you run this on Kubernetes, should you have any spare cluster-power you'd like to donate. 
 
+Please note, the folding@home client is liable to select jobs for other diseases too. If/when they add an option to work only on COVID-19, I will update the deployment here to do so.
+
 &nbsp;
 
 # Install
-```kubectl apply -f https://raw.githubusercontent.com/richstokes/k8s-fah/master/covid19.yaml```  
+```kubectl apply -f https://raw.githubusercontent.com/richstokes/k8s-fah/master/folding.yaml```  
 
 The default install deploys 2 replicas, limited to using 1 CPU core each. 
 
