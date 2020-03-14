@@ -8,7 +8,7 @@ https://foldingathome.org/2020/02/27/foldinghome-takes-up-the-fight-against-covi
 
 This is a quick deployment that lets you run this on Kubernetes, should you have any spare cluster-power you'd like to donate. 
 
-Please note, the folding@home client is liable to select jobs for other diseases too. If/when they add an option to work only on COVID-19, I will update the deployment here to do so.
+Please note, the COVID-19 is being prioritized, however the folding@home client is liable to select jobs for other diseases too. If/when they add an option to work only on COVID-19, I will update the deployment here to do so (until the pandemic is over!).
 
 &nbsp;
 
