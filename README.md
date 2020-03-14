@@ -15,7 +15,9 @@ Please note, the folding@home client is liable to select jobs for other diseases
 # Install
 ```kubectl apply -f https://raw.githubusercontent.com/richstokes/k8s-fah/master/folding.yaml```  
 
-The default install deploys 2 replicas, limited to using 1 CPU core each. 
+The default install deploys 2 replicas, limited to using 1 CPU core each.  
+
+GPU Support is enabled. In theory if your node makes a GPU availble to your containers, FAHClient should be able to use it. I've not been able to test this.
 
 
 &nbsp;
@@ -24,4 +26,11 @@ The default install deploys 2 replicas, limited to using 1 CPU core each.
 
 I've added the framework for a `PriorityClass`, so that K8s will preemptively evict these pods if a higher-priority one comes along.
 
-And of course set the resource limit as appropriate depending on how much CPU you wish to donate. In my testing, memory load has been very low (<256Mi)
+And of course set the replica count and resource limit as appropriate depending on how much CPU you wish to donate. In my testing, memory load has been very low (<256Mi)
+
+
+## config.xml
+
+The most compatible way to edit the config.xml is by modifying it's values and creating your own Docker image.  
+
+You *can* override/mount as a configMap in Kubernetes (you can see the scaffolding for this inside `folding.yaml`), however FAHClient seems to what to copy/move this file around, which doesn't work if the file is mounted. You'll get a bunch of errors from the FAHClient if you do this - there may be a better way to manage the config file - PRs welcome!
