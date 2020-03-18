@@ -4,23 +4,23 @@
 #   name: low-priority-class
 # value: 10
 # globalDefault: false
-# description: "This priority class should be used for low priority fah pods only."
+# description: "This priority class should be used for low priority fah-cpu pods only."
 # ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: fah
+  name: fah-cpu
   labels:
-    app: fah  
+    app: fah-cpu  
 spec:
   selector:
     matchLabels:
-      app: fah
+      app: fah-cpu
   replicas: 2 # Set number of replicas to run - one replica per node
   template:
     metadata:
       labels:
-        app: fah
+        app: fah-cpu
     spec:
       affinity:
         podAntiAffinity:
@@ -30,10 +30,10 @@ spec:
               - key: app
                 operator: In
                 values:
-                - fah
+                - fah-cpu
             topologyKey: "kubernetes.io/hostname"
       containers:
-      - name: fah
+      - name: fah-cpu
         image: "richstokes20/fah-covid:latest"
         imagePullPolicy: Always
         resources:
@@ -44,11 +44,11 @@ spec:
             cpu: 100m
             memory: 256Mi
       #   volumeMounts: # Mount config.xml file
-      #   - name: fah-config
-      #     mountPath: /etc/fahclient/config.xml
+      #   - name: fah-cpu-config
+      #     mountPath: /etc/fah-cpuclient/config.xml
       #     subPath: config.xml            
       # volumes:
-      #   - name: fah-config
+      #   - name: fah-cpu-config
       #     configMap:
       #       name: foldingathome-config
       # priorityClassName: low-priority-class
