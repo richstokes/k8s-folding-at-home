@@ -31,7 +31,7 @@ You can also run this as a DaemonSet (runs one replica per node) with:
 
 ```kubectl apply -f https://raw.githubusercontent.com/richstokes/k8s-fah/master/folding-daemonset.yaml```    
 
-There is a section in this .yaml you can uncomment in order to also run FAHClient on master nodes if you wish.  
+There is a `tolerations` section in this .yaml you can uncomment in order to also run FAHClient on master nodes if you wish.  
 
 &nbsp;
 
