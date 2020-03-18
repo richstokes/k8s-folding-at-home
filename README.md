@@ -22,7 +22,7 @@ If/when they add an option to work only on COVID-19, I will update the deploymen
 ```kubectl apply -f https://raw.githubusercontent.com/richstokes/k8s-fah/master/folding-gpu.yaml```
 
 ## CPU & GPU (Nvidia)
-```kubectl apply -f https://raw.githubusercontent.com/richstokes/k8s-fah/master/folding-cpu+gpu.yaml```  
+```kubectl apply -f https://raw.githubusercontent.com/richstokes/k8s-fah/master/folding-gpu-cpu.yaml```  
 
 The default install deploys 2 replicas, limited to using 1 CPU core each.  
 
@@ -36,7 +36,7 @@ The default install deploys 2 replicas, limited to using 1 CPU core each.
 &nbsp;
 
 
-### DaemonSet
+## DaemonSet
 
 You can also run this as a DaemonSet (runs one replica per node) with:  
 
