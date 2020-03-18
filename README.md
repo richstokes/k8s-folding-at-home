@@ -13,12 +13,23 @@ Please note, the COVID-19 work units are being prioritized, however the folding@
 &nbsp;
 
 # Install
-```kubectl apply -f https://raw.githubusercontent.com/richstokes/k8s-fah/master/folding.yaml```  
+## ONLY CPU 
+```kubectl apply -f https://raw.githubusercontent.com/richstokes/k8s-fah/master/folding-cpu.yaml```  
+
+## ONLY GPU (Nvidia)
+```kubectl apply -f https://raw.githubusercontent.com/richstokes/k8s-fah/master/folding-gpu.yaml```
+
+## CPU & GPU (Nvidia)
+```kubectl apply -f https://raw.githubusercontent.com/richstokes/k8s-fah/master/folding-cpu+gpu.yaml```  
 
 The default install deploys 2 replicas, limited to using 1 CPU core each.  
 
-GPU Support is enabled. In theory if your node makes a GPU availble to your containers, FAHClient should be able to use it. I've not been able to test this.
 
+### Tested GPU's
+* GeForce GTX 1080
+* GeForce RTX 2080
+* Tesla K40m
+* Tesla K80
 
 &nbsp;
 

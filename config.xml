@@ -5,26 +5,11 @@
   -->
 
   <!-- User Information -->
-  <user value=""/> <!-- Enter your user name here -->
+  <user value=""/>         <!-- Enter your user name here -->
   <team value=""/>         <!-- Your team number -->
-  <passkey value=""/>       <!-- 32 hexadecimal characters if provided -->
+  <passkey value=""/>      <!-- 32 hexadecimal characters if provided -->
 
-  <power value="full"/>     <!-- Throttling this at K8s level -->
+  <power value="full"/>    <!-- Throttling this at K8s level -->
   <gpu value="true"/>      <!-- If true, attempt to autoconfigure GPUs -->
-  <fold-anon value="true"/>
-
-  <!-- Folding Slots
-    No folding slot configuration is necessary.  The client will
-    automaticlaly choose a good configuration for you.  However, here
-    are some examples:
-  
-      <slot id="0" type="CPU"/>
-
-    or
-    
-      <slot id="0" type="CPU"/>
-      <slot id="1" type="GPU"/>
-
-    All slots in a configuration MUST have unique ids.
-   -->
+  <fold-anon value="false"/>
 </config>

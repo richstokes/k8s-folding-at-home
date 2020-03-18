@@ -1,0 +1,94 @@
+# apiVersion: scheduling.k8s.io/v1
+# kind: PriorityClass
+# metadata:
+#   name: low-priority-class
+# value: 10
+# globalDefault: false
+# description: "This priority class should be used for low priority fah-gpu-cpu pods only."
+# ---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fah-gpu-cpu
+  labels:
+    app: fah-gpu-cpu  
+spec:
+  selector:
+    matchLabels:
+      app: fah-gpu-cpu
+  replicas: 2 # Set number of replicas to run - one replica per node
+  template:
+    metadata:
+      labels:
+        app: fah-gpu-cpu
+    spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app
+                operator: In
+                values:
+                - fah-gpu-cpu
+            topologyKey: "kubernetes.io/hostname"
+      containers:
+      - name: fah-gpu-cpu
+        image: "richstokes20/fah-covid:latest"
+        imagePullPolicy: Always
+        resources:
+          limits:
+            cpu: 1000m # How much CPU you wish to donate per node
+            memory: 2Gi
+            nvidia.com/gpu: "1"
+          requests:
+            cpu: 100m
+            memory: 256Mi
+            nvidia.com/gpu: "1"
+      #   volumeMounts: # Mount config.xml file
+      #   - name: fah-gpu-cpu-config
+      #     mountPath: /etc/fah-gpu-cpuclient/config.xml
+      #     subPath: config.xml            
+      # volumes:
+      #   - name: fah-gpu-cpu-config
+      #     configMap:
+      #       name: foldingathome-config
+      # priorityClassName: low-priority-class
+# ---
+# apiVersion: v1
+# kind: ConfigMap
+# metadata:
+#   name: foldingathome-config
+# data:
+#   config.xml: |
+#     <config>
+#       <!--
+#         To set your user name, team and passkey just edit the text
+#         in quotes below.
+#       -->
+
+#       <!-- User Information -->
+#       <user value=""/> <!-- Enter your user name here -->
+#       <team value=""/>         <!-- Your team number -->
+#       <passkey value=""/>       <!-- 32 hexadecimal characters if provided -->
+
+#       <power value="full"/>     <!-- Throttling this at K8s level -->
+#       <gpu value="true"/>      <!-- If true, attempt to autoconfigure GPUs -->
+#       <fold-anon value="true"/>
+
+#       <!-- Folding Slots
+#         No folding slot configuration is necessary.  The client will
+#         automaticlaly choose a good configuration for you.  However, here
+#         are some examples:
+      
+#           <slot id="0" type="CPU"/>
+
+#         or
+        
+#           <slot id="0" type="CPU"/>
+#           <slot id="1" type="GPU"/>
+
+#         All slots in a configuration MUST have unique ids.
+#       -->
+#     </config>
+# ---
