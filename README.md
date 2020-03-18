@@ -17,9 +17,18 @@ Please note, the COVID-19 work units are being prioritized, however the folding@
 
 The default install deploys 2 replicas, limited to using 1 CPU core each.  
 
-GPU Support is enabled. In theory if your node makes a GPU availble to your containers, FAHClient should be able to use it. I've not been able to test this.
+GPU Support is enabled. In theory if your node makes a GPU availble to your containers, FAHClient should be able to use it. I've not been able to test this.  
+
+&nbsp;
 
 
+## DaemonSet
+
+You can also run this as a DaemonSet (runs one replica per node) with:  
+
+```kubectl apply -f https://raw.githubusercontent.com/richstokes/k8s-fah/master/folding-daemonset.yaml```    
+
+There is a section in this .yaml you can uncomment in order to also run on master nodes if you wish.  
 &nbsp;
 
 # Customizing
