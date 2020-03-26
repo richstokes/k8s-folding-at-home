@@ -5,7 +5,8 @@
 # value: 10
 # globalDefault: false
 # description: "This priority class should be used for low priority fah-cpu pods only."
-# ---
+
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -40,7 +41,15 @@ spec:
       containers:
         - name: fah-cpu
           image: "richstokes20/fah-covid:latest"
-          imagePullPolicy: Always
+          # --run-as UID should match runAsUser value in containers securityContext
+          command:
+            - "/usr/bin/FAHClient"
+            - "--config"
+            - "/var/lib/fahclient/config.xml"
+            - "--config-rotate=false"
+            - "--run-as"
+            - "1234"
+            - "--pid-file=/var/lib/fahclient/fahclient.pid"
           resources:
             limits:
               cpu: 1000m # How much CPU you wish to donate per node
@@ -48,29 +57,45 @@ spec:
             requests:
               cpu: 100m
               memory: 256Mi
-#           volumeMounts: # Mount config.xml file
-#             - name: data
-#               mountPath: /etc/fahclient
-#       initContainers:
-#         - name: copy-ro-scripts
-#           image: busybox
-#           command:
-#             [
-#               "sh",
-#               "-c",
-#               "cp /etc/fahclient-config/config.xml /etc/fahclient/config.xml",
-#             ]
-#           volumeMounts:
-#             - name: fah-cpu-config
-#               mountPath: /etc/fahclient-config
-#             - name: data
-#               mountPath: /etc/fahclient
-#       volumes:
-#         - name: data
-#           emptyDir: {}
-#         - name: fah-cpu-config
-#           configMap:
-#             name: foldingathome-config
+          # Make the container harder to break out of or exploit
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1234
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+          volumeMounts:
+            - mountPath: /var/lib/fahclient
+              name: fahclient
+      # We make an emptyDir to mount on the work directory /var/lib/fahclient
+      # so we can make the rest of the container's root filesystem read-only
+      volumes:
+        - name: fahclient
+          emptyDir: {}
+        # Uncomment if using ConfigMap config.xml
+        # - name: fah-cpu-config
+        #   configMap:
+        #     name: foldingathome-config
+      initContainers:
+        - name: copy-config
+          imagePullPolicy: Always
+          image: "richstokes20/fah-covid:latest"
+          command:
+            - "sh"
+            - "-c"
+            - "cp /etc/fahclient/config.xml /var/lib/fahclient/config.xml"
+            # Use this cp command instead if using ConfigMap config.xml
+            # - "cp /etc/fahclient-config/config.xml /var/lib/fahclient/config.xml"
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1234
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+          volumeMounts:
+            - mountPath: /var/lib/fahclient
+              name: fahclient
+            # Uncomment if using ConfigMap config.xml
+            # - name: fah-cpu-config
+            #   mountPath: /etc/fahclient-config
       # priorityClassName: low-priority-class
 ---
 apiVersion: v1

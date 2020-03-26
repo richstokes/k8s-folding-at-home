@@ -37,59 +37,102 @@ spec:
                 values:
                 - fah-gpu
             topologyKey: "kubernetes.io/hostname"
+
       containers:
-      - name: fah-gpu
-        image: "richstokes20/fah-covid:latest"
-        imagePullPolicy: Always
-        resources:
-          limits:
-            nvidia.com/gpu: "1" # how many GPU'S should each pod have
-          requests:
-            nvidia.com/gpu: "1"
-      #   volumeMounts: # Mount config.xml file
-      #   - name: fah-gpu-config
-      #     mountPath: /etc/fah-gpuclient/config.xml
-      #     subPath: config.xml            
-      # volumes:
-      #   - name: fah-gpu-config
-      #     configMap:
-      #       name: foldingathome-config
+        - name: fah-cpu
+          image: "richstokes20/fah-covid:latest"
+          # --run-as UID should match runAsUser value in containers securityContext
+          command:
+            - "/usr/bin/FAHClient"
+            - "--config"
+            - "/var/lib/fahclient/config.xml"
+            - "--config-rotate=false"
+            - "--run-as"
+            - "1234"
+            - "--pid-file=/var/lib/fahclient/fahclient.pid"
+            - "--gpu=true"
+          resources:
+            limits:
+              cpu: 1000m # How much CPU you wish to donate per node
+              memory: 256Mi
+            requests:
+              cpu: 100m
+              memory: 256Mi
+          # Make the container harder to break out of or exploit
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1234
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+          volumeMounts:
+            - mountPath: /var/lib/fahclient
+              name: fahclient
+      # We make an emptyDir to mount on the work directory /var/lib/fahclient
+      # so we can make the rest of the container's root filesystem read-only
+      volumes:
+        - name: fahclient
+          emptyDir: {}
+        # Uncomment if using ConfigMap config.xml
+        # - name: fah-cpu-config
+        #   configMap:
+        #     name: foldingathome-config
+      initContainers:
+        - name: copy-config
+          imagePullPolicy: Always
+          image: "richstokes20/fah-covid:latest"
+          command:
+            - "sh"
+            - "-c"
+            - "cp /etc/fahclient/config.xml /var/lib/fahclient/config.xml"
+            # Use this cp command instead if using ConfigMap config.xml
+            # - "cp /etc/fahclient-config/config.xml /var/lib/fahclient/config.xml"
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1234
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+          volumeMounts:
+            - mountPath: /var/lib/fahclient
+              name: fahclient
+            # Uncomment if using ConfigMap config.xml
+            # - name: fah-cpu-config
+            #   mountPath: /etc/fahclient-config
       # priorityClassName: low-priority-class
-# ---
-# apiVersion: v1
-# kind: ConfigMap
-# metadata:
-#   name: foldingathome-config
-# data:
-#   config.xml: |
-#     <config>
-#       <!--
-#         To set your user name, team and passkey just edit the text
-#         in quotes below.
-#       -->
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: foldingathome-config
+data:
+  config.xml: |
+    <config>
+      <!--
+        To set your user name, team and passkey just edit the text
+        in quotes below.
+      -->
 
-#       <!-- User Information -->
-#       <user value=""/> <!-- Enter your user name here -->
-#       <team value=""/>         <!-- Your team number -->
-#       <passkey value=""/>       <!-- 32 hexadecimal characters if provided -->
+      <!-- User Information -->
+      <user value=""/> <!-- Enter your user name here -->
+      <team value=""/>         <!-- Your team number -->
+      <passkey value=""/>       <!-- 32 hexadecimal characters if provided -->
 
-#       <power value="full"/>     <!-- Throttling this at K8s level -->
-#       <gpu value="true"/>      <!-- If true, attempt to autoconfigure GPUs -->
-#       <fold-anon value="true"/>
+      <power value="full"/>     <!-- Throttling this at K8s level -->
+      <gpu value="false"/>      <!-- If true, attempt to autoconfigure GPUs -->
+      <fold-anon value="true"/>
 
-#       <!-- Folding Slots
-#         No folding slot configuration is necessary.  The client will
-#         automaticlaly choose a good configuration for you.  However, here
-#         are some examples:
+      <!-- Folding Slots
+        No folding slot configuration is necessary.  The client will
+        automaticlaly choose a good configuration for you.  However, here
+        are some examples:
       
-#           <slot id="0" type="CPU"/>
+          <slot id="0" type="CPU"/>
 
-#         or
+        or
         
-#           <slot id="0" type="CPU"/>
-#           <slot id="1" type="GPU"/>
+          <slot id="0" type="CPU"/>
+          <slot id="1" type="GPU"/>
 
-#         All slots in a configuration MUST have unique ids.
-#       -->
-#     </config>
-# ---
+        All slots in a configuration MUST have unique ids.
+      -->
+    </config>
+---
