@@ -50,6 +50,7 @@ spec:
             - "--run-as"
             - "1234"
             - "--pid-file=/var/lib/fahclient/fahclient.pid"
+            - "--gpu=false"
           resources:
             limits:
               cpu: 1000m # How much CPU you wish to donate per node
@@ -117,7 +118,7 @@ data:
 
       <power value="full"/>     <!-- Throttling this at K8s level -->
       <gpu value="false"/>      <!-- If true, attempt to autoconfigure GPUs -->
-      <fold-anon value="true"/>
+      <fold-anon value="false"/>
 
       <!-- Folding Slots
         No folding slot configuration is necessary.  The client will

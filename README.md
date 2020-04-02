@@ -15,26 +15,41 @@ If/when they add an option to work only on COVID-19, I will update the deploymen
 &nbsp;
 
 # Install
-## ONLY CPU 
-```kubectl apply -f https://raw.githubusercontent.com/richstokes/k8s-fah/master/folding-cpu.yaml```  
+To use these deployment sets that uses gpu's to fold with,  I assume that you have a working k8s cluster that have nodes with either 1 or n NVIDIA gpus in
+them. (AMD have not been tested).
+We are using the same prerequisites as the [k8s-device-plugin](https://github.com/NVIDIA/k8s-device-plugin)
 
-## ONLY GPU (Nvidia)
-```kubectl apply -f https://raw.githubusercontent.com/richstokes/k8s-fah/master/folding-gpu.yaml```
+* NVIDIA drivers ~= 384.81
+* nvidia-docker version > 2.0 (see how to [install](https://github.com/NVIDIA/nvidia-docker) and it's [prerequisites](https://github.com/nvidia/nvidia-docker/wiki/Installation-\(version-2.0\)#prerequisites))
+* docker configured with nvidia as the [default runtime](https://github.com/NVIDIA/nvidia-docker/wiki/Advanced-topics#default-runtime).
+* Kubernetes version >= 1.10
 
-## CPU & GPU (Nvidia)
-```kubectl apply -f https://raw.githubusercontent.com/richstokes/k8s-fah/master/folding-gpu-cpu.yaml```  
+## Usage
+> *The default install deploys 2 replicas, limited to using 1 CPU core each.*
 
+&nbsp;
 
+* Only CPU
+```bash
+kubectl apply -f https://raw.githubusercontent.com/richstokes/k8s-fah/master/folding-cpu.yaml
+```  
+
+* Only GPU (Nvidia)
+```bash
+kubectl apply -f https://raw.githubusercontent.com/richstokes/k8s-fah/master/folding-gpu.yaml
+```
+
+* Both CPU & GPU (Nvidia)
+```bash
+kubectl apply -f https://raw.githubusercontent.com/richstokes/k8s-fah/master/folding-gpu-cpu.yaml
+```  
 
 ### Tested GPU's:
 * GeForce GTX 1080
 * GeForce RTX 2080
 * Tesla K40m
 * Tesla K80
-
-&nbsp;
-
-*The default install deploys 2 replicas, limited to using 1 CPU core each.*
+* ... Do you have tested this on amd-gpu's, please make a PR accordingly and update the list :) 
 
 &nbsp;
 

@@ -43,9 +43,11 @@ spec:
             limits:
               cpu: 1000m # How much CPU you wish to donate per node
               memory: 256Mi
+              nvidia.com/gpu: "1"
             requests:
               cpu: 100m
               memory: 256Mi
+              nvidia.com/gpu: "1"
           # Make the container harder to break out of or exploit
           securityContext:
             runAsNonRoot: true
@@ -106,7 +108,7 @@ data:
 
       <power value="full"/>     <!-- Throttling this at K8s level -->
       <gpu value="false"/>      <!-- If true, attempt to autoconfigure GPUs -->
-      <fold-anon value="true"/>
+      <fold-anon value="false"/>
 
       <!-- Folding Slots
         No folding slot configuration is necessary.  The client will
