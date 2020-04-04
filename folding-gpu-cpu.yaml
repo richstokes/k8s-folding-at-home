@@ -39,7 +39,7 @@ spec:
             topologyKey: "kubernetes.io/hostname"
 
       containers:
-        - name: fah-cpu
+        - name: fah-gpu-cpu
           image: "richstokes20/fah-covid:latest"
           # --run-as UID should match runAsUser value in containers securityContext
           command:
@@ -53,9 +53,11 @@ spec:
             - "--gpu=true"
           resources:
             limits:
+              nvidia.com/gpu: "1" # How many gpu's you want to donate per ndoe
               cpu: 1000m # How much CPU you wish to donate per node
-              memory: 256Mi
+              memory: 256Mi 
             requests:
+              nvidia.com/gpu: "1"
               cpu: 100m
               memory: 256Mi
           # Make the container harder to break out of or exploit
@@ -73,7 +75,7 @@ spec:
         - name: fahclient
           emptyDir: {}
         # Uncomment if using ConfigMap config.xml
-        # - name: fah-cpu-config
+        # - name: fah-gpu-cpu-config
         #   configMap:
         #     name: foldingathome-config
       initContainers:
@@ -95,7 +97,7 @@ spec:
             - mountPath: /var/lib/fahclient
               name: fahclient
             # Uncomment if using ConfigMap config.xml
-            # - name: fah-cpu-config
+            # - name: fah-gpu-cpu-config
             #   mountPath: /etc/fahclient-config
       # priorityClassName: low-priority-class
 ---
@@ -117,7 +119,7 @@ data:
       <passkey value=""/>       <!-- 32 hexadecimal characters if provided -->
 
       <power value="full"/>     <!-- Throttling this at K8s level -->
-      <gpu value="false"/>      <!-- If true, attempt to autoconfigure GPUs -->
+      <gpu value="true"/>      <!-- If true, attempt to autoconfigure GPUs -->
       <fold-anon value="true"/>
 
       <!-- Folding Slots
