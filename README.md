@@ -78,3 +78,9 @@ And of course set the replica count and resource limit as appropriate depending 
 The most compatible way to edit the config.xml is by modifying it's values and creating your own Docker image.  
 
 You *can* override/mount as a configMap in Kubernetes (you can see the scaffolding for this inside `folding.yaml`), however FAHClient seems to what to copy/move this file around, which doesn't work if the file is mounted. You'll get a bunch of errors from the FAHClient if you do this - there may be a better way to manage the config file - PRs welcome!
+
+&nbsp;
+
+# Credits
+
+Special thanks to [Bendik](https://github.com/skandix) for his work on supporting GPUs and general tweaks to the configs.
