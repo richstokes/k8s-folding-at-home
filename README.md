@@ -1,14 +1,14 @@
 # k8s-fah
-Run folding@home on Kubernetes.
+**Run folding@home on Kubernetes**.
 
-The folding project recently added support for the Corona virus (2019-nCoV). 
+The folding@home project recently added support for the Corona virus (2019-nCoV). 
 
 https://foldingathome.org/2020/02/27/foldinghome-takes-up-the-fight-against-covid-19-2019-ncov/
 
 
-This is a quick deployment that lets you run this on Kubernetes, should you have any spare cluster-power you'd like to donate. 
+This is deployment lets you run folding@home on Kubernetes, should you have any spare cluster-power you'd like to donate. 
 
-<u>Note</u>: COVID-19 work units are being prioritized, however the folding@home client is liable to select jobs for other diseases too.  
+<u>Note</u>: COVID-19 work units are currently being prioritized, however the folding@home client is liable to select jobs for other diseases too.  
 
 If/when they add an option to work only on COVID-19, I will update the deployment here to do so (until the pandemic is over).
 
@@ -73,9 +73,10 @@ To enable GPU with the daemon set, uncomment the `nvidia.com/gpu: "1"` lines fro
 
 # Customizing
 
-I've added the framework for a `PriorityClass`, so that K8s may preemptively evict folding@home pods if a higher-priority pod needs resources.
+Set the replica count and resource limit as appropriate depending on how much CPU you wish to donate. In my testing, memory load has been very low (<256Mi).  
 
-And of course set the replica count and resource limit as appropriate depending on how much CPU you wish to donate. In my testing, memory load has been very low (<256Mi)
+I've also added the framework for a `PriorityClass`, so that K8s may preemptively evict folding@home pods if a higher-priority pod needs resources.
+
 
 &nbsp;
 
