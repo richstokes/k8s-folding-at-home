@@ -15,8 +15,10 @@ If/when they add an option to work only on COVID-19, I will update the deploymen
 &nbsp;
 
 # Install
-To use these deployment sets that uses gpu's to fold with,  I assume that you have a working k8s cluster that have nodes with either 1 or n NVIDIA gpus in
-them. (AMD have not been tested).
+There are options to run this on CPU, GPU or a combination of both.  
+
+To use these deployment sets that uses GPU's to fold with,  I assume that you have a working k8s cluster that have nodes with either 1 or n NVIDIA gpus in them. (AMD have not been tested). 
+
 We are using the same prerequisites as the [k8s-device-plugin](https://github.com/NVIDIA/k8s-device-plugin)
 
 * NVIDIA drivers ~= 384.81
@@ -24,32 +26,37 @@ We are using the same prerequisites as the [k8s-device-plugin](https://github.co
 * docker configured with nvidia as the [default runtime](https://github.com/NVIDIA/nvidia-docker/wiki/Advanced-topics#default-runtime).
 * Kubernetes version >= 1.10
 
+
+
 ## Usage
+
 > *The default install deploys 2 replicas, limited to using 1 CPU core each.*
 
 &nbsp;
 
-* Only CPU
+### Only CPU
 ```bash
 kubectl apply -f https://raw.githubusercontent.com/richstokes/k8s-fah/master/folding-cpu.yaml
-```  
+```
 
-* Only GPU (Nvidia)
+### Only GPU (Nvidia)
 ```bash
 kubectl apply -f https://raw.githubusercontent.com/richstokes/k8s-fah/master/folding-gpu.yaml
 ```
 
-* Both CPU & GPU (Nvidia)
+### Both CPU & GPU (Nvidia)
 ```bash
 kubectl apply -f https://raw.githubusercontent.com/richstokes/k8s-fah/master/folding-gpu-cpu.yaml
-```  
+```
+&nbsp;
 
 ### Tested GPU's:
+
 * GeForce GTX 1080
 * GeForce RTX 2080
 * Tesla K40m
 * Tesla K80
-* ... Do you have tested this on amd-gpu's, please make a PR accordingly and update the list :) 
+* ... If you have tested this on AMD GPU's, please make a PR accordingly and update the list!
 
 &nbsp;
 
@@ -60,6 +67,8 @@ You can also run this as a DaemonSet (runs one replica per node) with:
 ```kubectl apply -f https://raw.githubusercontent.com/richstokes/k8s-fah/master/folding-daemonset.yaml```    
 
 There is a `tolerations` section in this .yaml you can uncomment in order to also run FAHClient on master nodes if you wish.  
+
+To enable GPU with the daemon set, uncomment the `nvidia.com/gpu: "1"` lines from `folding-daemonset.yaml` before applying.
 
 &nbsp;
 
@@ -77,7 +86,9 @@ And of course set the replica count and resource limit as appropriate depending 
 
 The most compatible way to edit the config.xml is by modifying it's values and creating your own Docker image.  
 
-You *can* override/mount as a configMap in Kubernetes (you can see the scaffolding for this inside `folding.yaml`), however FAHClient seems to what to copy/move this file around, which doesn't work if the file is mounted. You'll get a bunch of errors from the FAHClient if you do this - there may be a better way to manage the config file - PRs welcome!
+You *can* override/mount as a configMap in Kubernetes (you can see the scaffolding for this inside the manifests), however FAHClient seems to what to copy/move this file around, which doesn't work if the file is mounted.  
+
+You'll get a bunch of errors from the FAHClient if you do this - there may be a better way to manage the config file - PRs welcome!
 
 &nbsp;
 
