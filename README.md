@@ -6,7 +6,7 @@ The folding@home project recently added support for the Corona virus (2019-nCoV)
 https://foldingathome.org/2020/02/27/foldinghome-takes-up-the-fight-against-covid-19-2019-ncov/
 
 
-This is deployment lets you run folding@home on Kubernetes, should you have any spare cluster-power you'd like to donate. 
+This deployment lets you run folding@home on Kubernetes, should you have any spare cluster-power you'd like to donate. 
 
 <u>Note</u>: COVID-19 work units are currently being prioritized, however the folding@home client is liable to select jobs for other diseases too.  
 
