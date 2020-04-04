@@ -14,10 +14,10 @@ If/when they add an option to work only on COVID-19, I will update the deploymen
 
 &nbsp;
 
-# Install
+# Overview
 There are options to run this on CPU, GPU or a combination of both.  
 
-To use these deployment sets that uses GPU's to fold with,  I assume that you have a working k8s cluster that have nodes with either 1 or n NVIDIA gpus in them. (AMD have not been tested). 
+To use these deployment sets that uses GPU's to fold with,  I assume that you have a working k8s cluster that have nodes with either 1 or more NVIDIA GPUs in them. (AMD have not been tested). 
 
 We are using the same prerequisites as the [k8s-device-plugin](https://github.com/NVIDIA/k8s-device-plugin)
 
@@ -26,15 +26,13 @@ We are using the same prerequisites as the [k8s-device-plugin](https://github.co
 * docker configured with nvidia as the [default runtime](https://github.com/NVIDIA/nvidia-docker/wiki/Advanced-topics#default-runtime).
 * Kubernetes version >= 1.10
 
-
-
-## Usage
-
-> *The default install deploys 2 replicas, limited to using 1 CPU core each.*
-
 &nbsp;
 
+## Installation modes
+
 ### Only CPU
+> *The default install deploys 2 replicas, limited to using 1 CPU core each.*
+> 
 ```bash
 kubectl apply -f https://raw.githubusercontent.com/richstokes/k8s-fah/master/folding-cpu.yaml
 ```
@@ -75,11 +73,11 @@ To enable GPU with the daemon set, uncomment the `nvidia.com/gpu: "1"` lines fro
 
 # Customizing
 
-I've added the framework for a `PriorityClass`, so that K8s will preemptively evict these pods if a higher-priority one comes along.
+I've added the framework for a `PriorityClass`, so that K8s may preemptively evict folding@home pods if a higher-priority pod needs resources.
 
 And of course set the replica count and resource limit as appropriate depending on how much CPU you wish to donate. In my testing, memory load has been very low (<256Mi)
 
-
+&nbsp;
 
 
 ## config.xml
@@ -91,6 +89,7 @@ You *can* override/mount as a configMap in Kubernetes (you can see the scaffoldi
 You'll get a bunch of errors from the FAHClient if you do this - there may be a better way to manage the config file - PRs welcome!
 
 &nbsp;
+
 
 # Credits
 
