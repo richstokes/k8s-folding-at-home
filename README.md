@@ -73,7 +73,7 @@ To enable GPU with the daemon set, uncomment the `nvidia.com/gpu: "1"` lines fro
 
 # Customizing
 
-Set the replica count and resource limit as appropriate depending on how much CPU you wish to donate. In my testing, memory load has been very low (<256Mi).  
+Set the replica count and resource limit as appropriate depending on how much CPU you wish to donate. In my testing, memory load has been reasonably low (<512Mi).  
 
 I've also added the framework for a `PriorityClass`, so that K8s may preemptively evict folding@home pods if a higher-priority pod needs resources.
 

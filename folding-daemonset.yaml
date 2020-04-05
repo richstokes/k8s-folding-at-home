@@ -42,11 +42,11 @@ spec:
           resources:
             limits:
               cpu: 1000m # How much CPU you wish to donate per node
-              memory: 256Mi
+              memory: 512Mi
               # nvidia.com/gpu: "1"
             requests:
               cpu: 100m
-              memory: 256Mi
+              memory: 512Mi
               # nvidia.com/gpu: "1"
           # Make the container harder to break out of or exploit
           securityContext:

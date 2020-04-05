@@ -55,11 +55,11 @@ spec:
             limits:
               nvidia.com/gpu: "1" # How many gpu's you want to donate per ndoe
               cpu: 1000m # How much CPU you wish to donate per node
-              memory: 256Mi 
+              memory: 512Mi 
             requests:
               nvidia.com/gpu: "1"
               cpu: 100m
-              memory: 256Mi
+              memory: 512Mi
           # Make the container harder to break out of or exploit
           securityContext:
             runAsNonRoot: true
