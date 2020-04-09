@@ -38,6 +38,8 @@ kubectl apply -f https://raw.githubusercontent.com/richstokes/k8s-fah/master/fol
 ```
 
 ### Only GPU (Nvidia)
+> *The default install deploys 2 replicas, limited to using 1 GPU in each pod.*
+> 
 ```bash
 kubectl apply -f https://raw.githubusercontent.com/richstokes/k8s-fah/master/folding-gpu.yaml
 ```
@@ -49,12 +51,14 @@ kubectl apply -f https://raw.githubusercontent.com/richstokes/k8s-fah/master/fol
 &nbsp;
 
 ### Tested GPU's:
-
-* GeForce GTX 1080
-* GeForce RTX 2080
-* Tesla K40m
-* Tesla K80
-* ... If you have tested this on AMD GPU's, please make a PR accordingly and update the list!
+* NVIDIA 
+  * NVIDIA GeForce GTX 1080
+  * GeForce RTX 2080
+  * Tesla K40m
+  * Tesla K80
+  * V100
+* AMD
+  * ... If you have tested this on AMD GPU's, please make a PR accordingly and update the list!
 
 &nbsp;
 
