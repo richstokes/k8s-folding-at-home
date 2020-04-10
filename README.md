@@ -62,6 +62,12 @@ kubectl apply -f https://raw.githubusercontent.com/richstokes/k8s-fah/master/fol
 
 &nbsp;
 
+## Rancher
+If you have Rancher, you can easily install by searching for "folding" in your Rancher app catalog.
+
+&nbsp;
+
+
 ## DaemonSet
 
 You can also run this as a DaemonSet (runs one replica per node) with:  
