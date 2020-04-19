@@ -15,8 +15,8 @@ ADD config.xml /usr/share/doc/fahclient/sample-config.xml
 # See here for latest - https://foldingathome.org/alternative-downloads/
 RUN apt-get update && \
   apt install wget -y && \
-  wget https://download.foldingathome.org/releases/public/release/fahclient/debian-stable-64bit/v7.5/fahclient_7.5.1_amd64.deb && \
-  dpkg -i --force-depends fahclient_7.5.1_amd64.deb && \
+  wget https://download.foldingathome.org/releases/public/release/fahclient/debian-stable-64bit/v7.6/fahclient_7.6.9_amd64.deb && \
+  dpkg -i --force-depends fahclient_7.6.9_amd64.deb && \
   rm fahclient*.deb
 
 # Install Opencl 
