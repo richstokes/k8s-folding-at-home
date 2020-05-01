@@ -74,8 +74,10 @@ spec:
             - "sh"
             - "-c"
             - "cp /etc/fahclient/config.xml /var/lib/fahclient/config.xml"
-            # Use this cp command instead if using ConfigMap config.xml
-            # - "cp /etc/fahclient-config/config.xml /var/lib/fahclient/config.xml"
+            # Use following lines if using ConfigMap config.xml
+            # - "cp"
+            # - "/etc/fahclient-config/config.xml"
+            # - "/var/lib/fahclient/config.xml"
           securityContext:
             runAsNonRoot: true
             runAsUser: 1234
