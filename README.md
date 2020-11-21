@@ -6,9 +6,9 @@ The folding@home project [added support](https://foldingathome.org/2020/02/27/fo
 
 This deployment lets you run folding@home on Kubernetes, should you have any spare cluster-power you'd like to donate. 
 
-<u>Note</u>: COVID-19 work units are currently being prioritized, however the folding@home client is liable to select jobs for other diseases too.  
+_Note: COVID-19 work units are currently being prioritized, however the folding@home client is liable to select jobs for other diseases too._  
 
-If/when they add an option to work only on COVID-19, I will update the deployment here to do so (until the pandemic is over).
+_If/when they add an option to work only on COVID-19, I will update the deployment here to do so (until the pandemic is over)._
 
 &nbsp;
 
@@ -51,7 +51,7 @@ kubectl apply -f https://raw.githubusercontent.com/richstokes/k8s-fah/master/fol
 > Runs 6x replicas, 1 CPU core each.
 >
 ```bash
-kubectl apply -f folding-minikube.yaml
+kubectl apply -f https://raw.githubusercontent.com/richstokes/k8s-fah/master/folding-minikube.yaml
 ```
 
 &nbsp;
