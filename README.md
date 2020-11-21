@@ -58,7 +58,7 @@ I like to give my minikube extra resources with:
 ```bash
 minikube config set cpus 6
 minikube config set memory 8192
-minikube delete && minikube start && minikube config view
+minikube delete && minikube start
 ```
 
 &nbsp;
