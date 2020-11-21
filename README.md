@@ -54,7 +54,7 @@ kubectl apply -f https://raw.githubusercontent.com/richstokes/k8s-fah/master/fol
 kubectl apply -f https://raw.githubusercontent.com/richstokes/k8s-fah/master/folding-minikube.yaml
 ```
 
-I like to give my minikube extra resources with:
+I like to give my minikube cluster extra resources with:
 ```bash
 minikube config set cpus 6
 minikube config set memory 8192
