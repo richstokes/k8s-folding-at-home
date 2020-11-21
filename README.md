@@ -48,6 +48,14 @@ kubectl apply -f https://raw.githubusercontent.com/richstokes/k8s-fah/master/fol
 ```bash
 kubectl apply -f https://raw.githubusercontent.com/richstokes/k8s-fah/master/folding-gpu-cpu.yaml
 ```
+
+### Minikube
+> Runs 6x replicas, 1 CPU core each.
+>
+```bash
+kubectl apply -f folding-minikube.yaml
+```
+
 &nbsp;
 
 ### Tested GPU's:
