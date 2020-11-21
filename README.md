@@ -1,9 +1,7 @@
 # k8s-fah
 **Run folding@home on Kubernetes**.
 
-The folding@home project recently added support for the Corona virus (2019-nCoV). 
-
-https://foldingathome.org/2020/02/27/foldinghome-takes-up-the-fight-against-covid-19-2019-ncov/
+The folding@home project [added support](https://foldingathome.org/2020/02/27/foldinghome-takes-up-the-fight-against-covid-19-2019-ncov/) for the Corona virus (2019-nCoV). 
 
 
 This deployment lets you run folding@home on Kubernetes, should you have any spare cluster-power you'd like to donate. 
