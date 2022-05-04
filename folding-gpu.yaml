@@ -10,13 +10,14 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: fah-gpu
+  namespace: nrevo
   labels:
     app: fah-gpu  
 spec:
   selector:
     matchLabels:
       app: fah-gpu
-  replicas: 2 # Set number of replicas to run - one replica per node
+  replicas: 1 # Set number of replicas to run - currently only one GPU
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -37,7 +38,7 @@ spec:
                 values:
                 - fah-gpu
             topologyKey: "kubernetes.io/hostname"
-
+      terminationGracePeriodSeconds: 86400
       containers:
         - name: fah-gpu
           image: "richstokes20/fah-covid:latest"
@@ -47,20 +48,28 @@ spec:
             - "--config"
             - "/var/lib/fahclient/config.xml"
             - "--config-rotate=false"
-            - "--run-as"
-            - "1234"
             - "--pid-file=/var/lib/fahclient/fahclient.pid"
             - "--gpu=true"
           resources:
             limits:
               nvidia.com/gpu: "1" # How many gpu's you want to donate per ndoe
-
             requests:
               nvidia.com/gpu: "1"
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                  - /usr/bin/FAHClient
+                  - '--config'
+                  - /var/lib/fahclient/config.xml
+                  - '--config-rotate=false'
+                  - '--pid-file=/var/lib/fahclient/fahclient.pid'
+                  - '--gpu=true'
+                  - '--send-command'
+                  - 'finish'
           # Make the container harder to break out of or exploit
           securityContext:
             runAsNonRoot: true
-            runAsUser: 1234
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
           volumeMounts:
@@ -70,11 +79,13 @@ spec:
       # so we can make the rest of the container's root filesystem read-only
       volumes:
         - name: fahclient
-          emptyDir: {}
+          persistentVolumeClaim:
+            claimName: fah-gpu-claim
+        #  emptyDir: {}
         # Uncomment if using ConfigMap config.xml
-        # - name: fah-gpu-config
-        #   configMap:
-        #     name: foldingathome-config
+        - name: fah-gpu-config
+          configMap:
+            name: foldingathome-config
       initContainers:
         - name: copy-config
           imagePullPolicy: Always
@@ -89,51 +100,51 @@ spec:
             # - "/var/lib/fahclient/config.xml"
           securityContext:
             runAsNonRoot: true
-            runAsUser: 1234
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
           volumeMounts:
             - mountPath: /var/lib/fahclient
               name: fahclient
-            # Uncomment if using ConfigMap config.xml
-            # - name: fah-gpu-config
-            #   mountPath: /etc/fahclient-config
+          # Uncomment if using ConfigMap config.xml
+            - name: fah-gpu-config
+              mountPath: /etc/fahclient-config
       # priorityClassName: low-priority-class
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: foldingathome-config
-data:
-  config.xml: |
-    <config>
-      <!--
-        To set your user name, team and passkey just edit the text
-        in quotes below.
-      -->
-
-      <!-- User Information -->
-      <user value=""/> <!-- Enter your user name here -->
-      <team value=""/>         <!-- Your team number -->
-      <passkey value=""/>       <!-- 32 hexadecimal characters if provided -->
-
-      <power value="full"/>     <!-- Throttling this at K8s level -->
-      <gpu value="true"/>      <!-- If true, attempt to autoconfigure GPUs -->
-      <fold-anon value="false"/>
-
-      <!-- Folding Slots
-        No folding slot configuration is necessary.  The client will
-        automaticlaly choose a good configuration for you.  However, here
-        are some examples:
-      
-          <slot id="0" type="CPU"/>
-
-        or
-        
-          <slot id="0" type="CPU"/>
-          <slot id="1" type="GPU"/>
-
-        All slots in a configuration MUST have unique ids.
-      -->
-    </config>
+# ConfigMap in keybase
+#---
+#apiVersion: v1
+#kind: ConfigMap
+#metadata:
+#  name: foldingathome-config
+#data:
+#  config.xml: |
+#    <config>
+#      <!--
+#        To set your user name, team and passkey just edit the text
+#        in quotes below.
+#      -->
+#
+#      <!-- User Information -->
+#      <user value=""/> <!-- Enter your user name here -->
+#      <team value=""/>         <!-- Your team number -->
+#      <passkey value=""/>       <!-- 32 hexadecimal characters if provided -->
+#
+#      <power value="full"/>     <!-- Throttling this at K8s level -->
+#      <gpu value="true"/>      <!-- If true, attempt to autoconfigure GPUs -->
+#      <fold-anon value="false"/>
+#
+#      <!-- Folding Slots
+#        No folding slot configuration is necessary.  The client will
+#        automaticlaly choose a good configuration for you.  However, here
+#        are some examples:
+#      
+#          <slot id="0" type="CPU"/>
+#
+#        or
+#        
+#          <slot id="0" type="CPU"/>
+#          <slot id="1" type="GPU"/>
+#
+#        All slots in a configuration MUST have unique ids.
+#      -->
+#    </config>
 ---
