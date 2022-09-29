@@ -22,7 +22,7 @@ spec:
     spec:
       containers:
         - name: fah-cpu
-          image: "richstokes20/fah-covid:latest"
+          image: "ghcr.io/richstokes/k8s-fah:master"
           # --run-as UID should match runAsUser value in containers securityContext
           command:
             - "/usr/bin/FAHClient"
