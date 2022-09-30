@@ -154,7 +154,7 @@ jobs:
       - name: PR - Patch to use image
         run: |
           kubectl patch deployment fah-cpu -p '{"spec":{"template":{"spec":{"containers":[{"name":"fah-cpu","image":"${{ env.REGISTRY }}/${{ github.event.pull_request.head.repo.full_name }}:${{ github.head_ref }}"}]}}}}'
-          kubectl patch deployment fah-cpu -p '{"spec":{"template":{"spec":{"initContainers":[{"name":"copy-config","image":"${{ env.REGISTRY }}/${{ github.event.pull_request.head.repo.full_name }}:${{ github.head_ref }} "}]}}}}'
+          kubectl patch deployment fah-cpu -p '{"spec":{"template":{"spec":{"initContainers":[{"name":"copy-config","image":"${{ env.REGISTRY }}/${{ github.event.pull_request.head.repo.full_name }}:${{ github.head_ref }}"}]}}}}'
         if: ${{ github.event_name == 'pull_request' }}
       # wait for deployment to be ready
       - run: kubectl rollout status deployment fah-cpu --timeout=300s; kubectl describe deployment fah-cpu; kubectl describe pods -l app=fah-cpu
@@ -183,7 +183,7 @@ jobs:
         uses: docker/setup-buildx-action@79abd3f86f79a9d68a23c75a09a9a85889262adf
       - run: docker run --rm ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.ref_name }} uname -a
         if: ${{ github.event_name != 'pull_request' }}
-      - run: docker run --rm ttl.sh/${{ env.IMAGE_NAME }}:${{ github.event.pull_request.head.sha }} uname -a
+      - run: docker run --rm ${{ env.REGISTRY }}/${{ github.event.pull_request.head.repo.full_name }}:${{ github.head_ref }} uname -a
         if: ${{ github.event_name == 'pull_request' }}
   docker-arm64-test:
     needs: build
@@ -201,5 +201,5 @@ jobs:
         uses: docker/setup-buildx-action@79abd3f86f79a9d68a23c75a09a9a85889262adf
       - run: docker run --platform=linux/arm64 --rm ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.ref_name }} uname -a
         if: ${{ github.event_name != 'pull_request' }}
-      - run: docker run --platform=linux/arm64 --rm ttl.sh/${{ env.IMAGE_NAME }}:${{ github.event.pull_request.head.sha }} uname -a
+      - run: docker run --platform=linux/arm64 --rm ${{ env.REGISTRY }}/${{ github.event.pull_request.head.repo.full_name }}:${{ github.head_ref }} uname -a
         if: ${{ github.event_name == 'pull_request' }}
