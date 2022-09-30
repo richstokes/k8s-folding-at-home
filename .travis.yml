@@ -21,8 +21,8 @@ script:
 # patch to use image we just built
 - |
   if [ "${TRAVIS_EVENT_TYPE}" == "pull_request" ]; then
-    kubectl patch deployment fah-cpu -p "{\"spec\":{\"template\":{\"spec\":{\"containers\":[{\"name\":\"fah-cpu\",\"image\":\"ttl.sh/${TRAVIS_PULL_REQUEST_SLUG}:1h\"}]}}}}";
-    kubectl patch deployment fah-cpu -p "{\"spec\":{\"template\":{\"spec\":{\"initContainers\":[{\"name\":\"copy-config\",\"image\":\"ttl.sh/${TRAVIS_PULL_REQUEST_SLUG}:1h\"}]}}}}";
+    kubectl patch deployment fah-cpu -p "{\"spec\":{\"template\":{\"spec\":{\"containers\":[{\"name\":\"fah-cpu\",\"image\":\"ghcr.io/${TRAVIS_PULL_REQUEST_SLUG}:${TRAVIS_PULL_REQUEST_BRANCH}\"}]}}}}";
+    kubectl patch deployment fah-cpu -p "{\"spec\":{\"template\":{\"spec\":{\"initContainers\":[{\"name\":\"copy-config\",\"image\":\"ghcr.io/${TRAVIS_PULL_REQUEST_SLUG}:${TRAVIS_PULL_REQUEST_BRANCH}\"}]}}}}";
   fi
 - |
   if [ "${TRAVIS_EVENT_TYPE}" == "push" ]; then

@@ -32,8 +32,8 @@ jobs:
       # patch to use image we just built
       - run: |
           if [ -n "$CIRCLE_PR_USERNAME" ]; then
-            kubectl patch deployment fah-cpu -p "{\"spec\":{\"template\":{\"spec\":{\"containers\":[{\"name\":\"fah-cpu\",\"image\":\"ttl.sh/$CIRCLE_PR_USERNAME/$CIRCLE_PR_REPONAME:1h\"}]}}}}";
-            kubectl patch deployment fah-cpu -p "{\"spec\":{\"template\":{\"spec\":{\"initContainers\":[{\"name\":\"copy-config\",\"image\":\"ttl.sh/$CIRCLE_PR_USERNAME/$CIRCLE_PR_REPONAME:1h\"}]}}}}";
+            kubectl patch deployment fah-cpu -p "{\"spec\":{\"template\":{\"spec\":{\"containers\":[{\"name\":\"fah-cpu\",\"image\":\"ghcr.io/$CIRCLE_PR_USERNAME/$CIRCLE_PR_REPONAME:$CIRCLE_BRANCH\"}]}}}}";
+            kubectl patch deployment fah-cpu -p "{\"spec\":{\"template\":{\"spec\":{\"initContainers\":[{\"name\":\"copy-config\",\"image\":\"ghcr.io/$CIRCLE_PR_USERNAME/$CIRCLE_PR_REPONAME:$CIRCLE_BRANCH\"}]}}}}";
           else
             kubectl patch deployment fah-cpu -p "{\"spec\":{\"template\":{\"spec\":{\"containers\":[{\"name\":\"fah-cpu\",\"image\":\"ghcr.io/$CIRCLE_USERNAME/$CIRCLE_PROJECT_REPONAME:$CIRCLE_BRANCH\"}]}}}}";
             kubectl patch deployment fah-cpu -p "{\"spec\":{\"template\":{\"spec\":{\"initContainers\":[{\"name\":\"copy-config\",\"image\":\"ghcr.io/$CIRCLE_USERNAME/$CIRCLE_PROJECT_REPONAME:$CIRCLE_BRANCH\"}]}}}}";

@@ -77,18 +77,6 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
 
-      # Extract metadata (tags, labels) for Docker
-      # Upload to credentialess registry and keep for 1h on PR
-      # https://github.com/docker/metadata-action
-      - name: Extract Docker metadata for pull request end to end testing
-        id: meta_pr
-        uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
-        if: ${{ github.event_name == 'pull_request' }}
-        with:
-          images: ttl.sh/${{ env.IMAGE_NAME }} # hopefully no more than 1 PR per hour.
-          tags: |
-            type=raw,value=1h
-
 
       # Build and push Docker image with Buildx (don't push on PR)
       # https://github.com/docker/build-push-action
@@ -105,18 +93,9 @@ jobs:
           cache-to: type=gha,mode=max
           platforms: linux/amd64,linux/arm64
 
-      - name: Build and push Docker image and push to ttl.sh for testing
-        id: build-and-push_pr
-        uses: docker/build-push-action@ac9327eae2b366085ac7f6a2d02df8aa8ead720a
+      - name: PR - Sleep for 30s. Assume using image from fork branch which should be available in 30s (with caching)
         if: ${{ github.event_name == 'pull_request' }}
-        with:
-          context: .
-          push: true
-          tags: ${{ steps.meta_pr.outputs.tags }}
-          labels: ${{ steps.meta_pr.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          platforms: linux/amd64,linux/arm64
+        run: sleep 30
 
 
       # Sign the resulting Docker image digest except on PRs.
@@ -167,18 +146,15 @@ jobs:
         # patch to one replica
       - run: kubectl patch deployment fah-cpu -p '{"spec":{"replicas":1}}'
       - name: Patch to use branch image
-        run: kubectl patch deployment fah-cpu -p '{"spec":{"template":{"spec":{"containers":[{"name":"fah-cpu","image":"${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.ref_name	}}"}]}}}}'
+        run: |
+          kubectl patch deployment fah-cpu -p '{"spec":{"template":{"spec":{"containers":[{"name":"fah-cpu","image":"${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.ref_name }}"}]}}}}'
+          kubectl patch deployment fah-cpu -p '{"spec":{"template":{"spec":{"initContainers":[{"name":"copy-config","image":"${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.ref_name }}"}]}}}}'
         if: ${{ github.event_name != 'pull_request' }}
-        # patch to use PR image we just built
+        # patch to use PR image
       - name: PR - Patch to use image
-        run: kubectl patch deployment fah-cpu -p '{"spec":{"template":{"spec":{"containers":[{"name":"fah-cpu","image":"ttl.sh/${{ env.IMAGE_NAME }}:1h"}]}}}}'
-        if: ${{ github.event_name == 'pull_request' }}
-      - name: Patch to use branch image
-        run: kubectl patch deployment fah-cpu -p '{"spec":{"template":{"spec":{"initContainers":[{"name":"copy-config","image":"${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.ref_name	}}"}]}}}}'
-        if: ${{ github.event_name != 'pull_request' }}
-        # patch to use PR image we just built
-      - name: PR - Patch to use image
-        run: kubectl patch deployment fah-cpu -p '{"spec":{"template":{"spec":{"initContainers":[{"name":"copy-config","image":"ttl.sh/${{ env.IMAGE_NAME }}:1h"}]}}}}'
+        run: |
+          kubectl patch deployment fah-cpu -p '{"spec":{"template":{"spec":{"containers":[{"name":"fah-cpu","image":"${{ env.REGISTRY }}/${{ github.event.pull_request.head.repo.full_name }}:${{ github.head_ref }}"}]}}}}'
+          kubectl patch deployment fah-cpu -p '{"spec":{"template":{"spec":{"initContainers":[{"name":"copy-config","image":"${{ env.REGISTRY }}/${{ github.event.pull_request.head.repo.full_name }}:${{ github.head_ref }} "}]}}}}'
         if: ${{ github.event_name == 'pull_request' }}
       # wait for deployment to be ready
       - run: kubectl rollout status deployment fah-cpu --timeout=300s; kubectl describe deployment fah-cpu; kubectl describe pods -l app=fah-cpu
