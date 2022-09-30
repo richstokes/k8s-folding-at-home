@@ -1,4 +1,4 @@
-name: Docker
+name: Docker Publish & K8S E2E
 
 # This workflow uses actions that are not certified by GitHub.
 # They are provided by a third-party and are governed by
@@ -9,11 +9,11 @@ on:
   schedule:
     - cron: '29 3 * * *'
   push:
-    branches: [ "master" ]
+    branches: ['*']
     # Publish semver tags as releases.
     tags: [ 'v*.*.*' ]
   pull_request:
-    branches: [ "master" ]
+    branches: ['*']
 
 env:
   # Use docker.io for Docker Hub if empty
@@ -70,22 +70,50 @@ jobs:
 
       # Extract metadata (tags, labels) for Docker
       # https://github.com/docker/metadata-action
-      - name: Extract Docker metadata
+      - name: Extract Docker metadata for GitHub Container Registry
         id: meta
         uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
+        if: ${{ github.event_name != 'pull_request' }}
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
 
+      # Extract metadata (tags, labels) for Docker
+      # Upload to credentialess registry and keep for 1h on PR
+      # https://github.com/docker/metadata-action
+      - name: Extract Docker metadata for pull request end to end testing
+        id: meta_pr
+        uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
+        if: ${{ github.event_name == 'pull_request' }}
+        with:
+          images: ttl.sh/${{ env.IMAGE_NAME }} # hopefully no more than 1 PR per hour.
+          tags: |
+            type=raw,value=1h
+
+
       # Build and push Docker image with Buildx (don't push on PR)
       # https://github.com/docker/build-push-action
-      - name: Build and push Docker image
+      - name: Build and push Docker image and push to GitHub Container Registry
         id: build-and-push
         uses: docker/build-push-action@ac9327eae2b366085ac7f6a2d02df8aa8ead720a
+        if: ${{ github.event_name != 'pull_request' }}
         with:
           context: .
-          push: ${{ github.event_name != 'pull_request' }}
+          push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          platforms: linux/amd64,linux/arm64
+
+      - name: Build and push Docker image and push to ttl.sh for testing
+        id: build-and-push_pr
+        uses: docker/build-push-action@ac9327eae2b366085ac7f6a2d02df8aa8ead720a
+        if: ${{ github.event_name == 'pull_request' }}
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta_pr.outputs.tags }}
+          labels: ${{ steps.meta_pr.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
           platforms: linux/amd64,linux/arm64
@@ -103,3 +131,99 @@ jobs:
         # This step uses the identity token to provision an ephemeral certificate
         # against the sigstore community Fulcio instance.
         run: echo "${{ steps.meta.outputs.tags }}" | xargs -I {} cosign sign {}@${{ steps.build-and-push.outputs.digest }}
+
+  k8s-e2e:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+            ~/go/bin
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+      - uses: actions/setup-go@v3
+        with:
+          go-version: '^1.17' # The Go version to download (if necessary) and use.
+      - uses: satackey/action-docker-layer-caching@v0.0.11
+      # Ignore the failure of a step and avoid terminating the job.
+        continue-on-error: true
+
+      # Workaround: https://github.com/docker/build-push-action/issues/461
+      - run: docker version
+      - run: go install sigs.k8s.io/kind@v0.16.0
+      - run: sudo snap install kubectl --classic
+      - run: kind version
+      - run: kind create cluster
+      - run: kubectl cluster-info --context kind-kind
+      - run: kubectl create -f folding-cpu.yaml
+        # patch to one replica
+      - run: kubectl patch deployment fah-cpu -p '{"spec":{"replicas":1}}'
+      - name: Patch to use branch image
+        run: kubectl patch deployment fah-cpu -p '{"spec":{"template":{"spec":{"containers":[{"name":"fah-cpu","image":"${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.ref_name	}}"}]}}}}'
+        if: ${{ github.event_name != 'pull_request' }}
+        # patch to use PR image we just built
+      - name: PR - Patch to use image
+        run: kubectl patch deployment fah-cpu -p '{"spec":{"template":{"spec":{"containers":[{"name":"fah-cpu","image":"ttl.sh/${{ env.IMAGE_NAME }}:1h"}]}}}}'
+        if: ${{ github.event_name == 'pull_request' }}
+      - name: Patch to use branch image
+        run: kubectl patch deployment fah-cpu -p '{"spec":{"template":{"spec":{"initContainers":[{"name":"copy-config","image":"${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.ref_name	}}"}]}}}}'
+        if: ${{ github.event_name != 'pull_request' }}
+        # patch to use PR image we just built
+      - name: PR - Patch to use image
+        run: kubectl patch deployment fah-cpu -p '{"spec":{"template":{"spec":{"initContainers":[{"name":"copy-config","image":"ttl.sh/${{ env.IMAGE_NAME }}:1h"}]}}}}'
+        if: ${{ github.event_name == 'pull_request' }}
+      # wait for deployment to be ready
+      - run: kubectl rollout status deployment fah-cpu --timeout=300s; kubectl describe deployment fah-cpu; kubectl describe pods -l app=fah-cpu
+        continue-on-error: true
+      - run: kubectl get deployment/fah-cpu -o yaml
+      - run: kubectl get pods -oyaml
+      - name: print out uname to verify architecture in pod's container is amd64
+        run: kubectl exec deployment/fah-cpu -- /bin/sh -c "uname -a"
+      - run: kind delete cluster
+        continue-on-error: true
+  # k8s-e2e-arm64: Covered by CircleCI/Travis since it does not require slow ARM64 emulation.
+    
+  docker-test:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Set up QEMU
+        id: qemu
+        uses: docker/setup-qemu-action@v1
+        with:
+          image: tonistiigi/binfmt:latest
+          platforms: linux/arm64
+      - name: Setup Docker buildx
+        uses: docker/setup-buildx-action@79abd3f86f79a9d68a23c75a09a9a85889262adf
+      - run: docker run --rm ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.ref_name }} uname -a
+        if: ${{ github.event_name != 'pull_request' }}
+      - run: docker run --rm ttl.sh/${{ env.IMAGE_NAME }}:${{ github.event.pull_request.head.sha }} uname -a
+        if: ${{ github.event_name == 'pull_request' }}
+  docker-arm64-test:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Set up QEMU
+        id: qemu
+        uses: docker/setup-qemu-action@v1
+        with:
+          image: tonistiigi/binfmt:latest
+          platforms: linux/arm64
+      - name: Setup Docker buildx
+        uses: docker/setup-buildx-action@79abd3f86f79a9d68a23c75a09a9a85889262adf
+      - run: docker run --platform=linux/arm64 --rm ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.ref_name }} uname -a
+        if: ${{ github.event_name != 'pull_request' }}
+      - run: docker run --platform=linux/arm64 --rm ttl.sh/${{ env.IMAGE_NAME }}:${{ github.event.pull_request.head.sha }} uname -a
+        if: ${{ github.event_name == 'pull_request' }}

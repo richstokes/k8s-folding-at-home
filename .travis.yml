@@ -1,0 +1,47 @@
+os: linux
+services: docker
+dist: jammy
+language: go
+go: stable
+cache:
+  directories:
+    - ~/go/bin
+    - ~/go/pkg/mod
+    - ~/.cache/go-build
+script:
+- docker version
+- go install sigs.k8s.io/kind@v0.16.0
+- sudo snap install kubectl --classic
+- kind version
+- kind create cluster
+- kubectl config use-context kind-kind
+- kubectl create -f folding-cpu.yaml
+# patch to one replica
+- kubectl patch deployment fah-cpu -p "{\"spec\":{\"replicas\":1}}"
+# patch to use image we just built
+- |
+  if [ "${TRAVIS_EVENT_TYPE}" == "pull_request" ]; then
+    kubectl patch deployment fah-cpu -p "{\"spec\":{\"template\":{\"spec\":{\"containers\":[{\"name\":\"fah-cpu\",\"image\":\"ttl.sh/${TRAVIS_PULL_REQUEST_SLUG}:1h\"}]}}}}";
+    kubectl patch deployment fah-cpu -p "{\"spec\":{\"template\":{\"spec\":{\"initContainers\":[{\"name\":\"copy-config\",\"image\":\"ttl.sh/${TRAVIS_PULL_REQUEST_SLUG}:1h\"}]}}}}";
+  fi
+- |
+  if [ "${TRAVIS_EVENT_TYPE}" == "push" ]; then
+    kubectl patch deployment fah-cpu -p "{\"spec\":{\"template\":{\"spec\":{\"containers\":[{\"name\":\"fah-cpu\",\"image\":\"ghcr.io/${TRAVIS_REPO_SLUG}:${TRAVIS_BRANCH}\"}]}}}}";
+    kubectl patch deployment fah-cpu -p "{\"spec\":{\"template\":{\"spec\":{\"initContainers\":[{\"name\":\"copy-config\",\"image\":\"ghcr.io/${TRAVIS_REPO_SLUG}:${TRAVIS_BRANCH}\"}]}}}}";
+  fi
+- kubectl get deployment/fah-cpu -o yaml
+- kubectl rollout status deployment fah-cpu --timeout=300s; kubectl describe deployment fah-cpu; kubectl describe pods -l app=fah-cpu
+- kubectl get deployment/fah-cpu -o yaml
+- kubectl get pods -oyaml
+#  print out uname to verify architecture in pod's container is amd64
+- kubectl exec deployment/fah-cpu -- /bin/sh -c "uname -a"
+
+jobs:
+  include:
+    - stage: travis-ci
+      arch: arm64-graviton2
+      virt: vm
+      group: edge
+    # amd64 covered by GitHub Actions, travis credits are hard to come by you know :)
+    # PS. It's free for open source, but you have to email them to get credit refills.
+    # - arch: amd64
