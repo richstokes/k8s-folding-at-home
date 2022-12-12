@@ -51,6 +51,10 @@ spec:
           # Make the container harder to break out of or exploit
           securityContext:
             runAsNonRoot: true
+            # UID needs to be defined to not default to root on kubernetes.
+            # If you are using OpenShift, patch to remove runAsUser
+            # oc patch deployment fah-cpu -p '{"spec":{"template":{"spec":{"containers":[{"name":"fah-cpu","securityContext":{"runAsUser":null}}]}}}}'
+            # oc patch deployment fah-cpu -p '{"spec":{"template":{"spec":{"initContainers":[{"name":"copy-config","securityContext":{"runAsUser":null}}]}}}}'
             runAsUser: 1234
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
@@ -69,7 +73,7 @@ spec:
       initContainers:
         - name: copy-config
           imagePullPolicy: Always
-          image: "richstokes20/fah-covid:latest"
+          image: "ghcr.io/richstokes/k8s-fah:master"
           command:
             - "sh"
             - "-c"
@@ -80,6 +84,10 @@ spec:
             # - "/var/lib/fahclient/config.xml"
           securityContext:
             runAsNonRoot: true
+            # UID needs to be defined to not default to root on kubernetes.
+            # If you are using OpenShift, patch to remove runAsUser
+            # oc patch deployment fah-cpu -p '{"spec":{"template":{"spec":{"containers":[{"name":"fah-cpu","securityContext":{"runAsUser":null}}]}}}}'
+            # oc patch deployment fah-cpu -p '{"spec":{"template":{"spec":{"initContainers":[{"name":"copy-config","securityContext":{"runAsUser":null}}]}}}}'
             runAsUser: 1234
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false

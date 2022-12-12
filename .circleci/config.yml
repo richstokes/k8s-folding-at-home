@@ -1,0 +1,53 @@
+# Use the latest 2.1 version of CircleCI pipeline process engine.
+# See: https://circleci.com/docs/2.0/configuration-reference
+version: 2.1
+
+# Define a job to be invoked later in a workflow.
+# See: https://circleci.com/docs/2.0/configuration-reference/#jobs
+jobs:
+  arm64-e2e:
+    machine:
+      image: ubuntu-2004:current
+    resource_class: arm.medium
+    steps:
+      - checkout
+      - run: docker version
+      - restore_cache:
+          key: cache-{{ checksum ".circleci/config.yml" }}
+      - run: go env
+      - run: go install sigs.k8s.io/kind@v0.16.0
+      - save_cache:
+          key: cache-{{ checksum ".circleci/config.yml" }}
+          paths:
+            - ~/go/bin
+            - ~/go/pkg/mod
+            - ~/.cache/go-build
+      - run: sudo snap install kubectl --classic
+      - run: kind version
+      - run: kind create cluster
+      - run: kubectl config use-context kind-kind
+      - run: kubectl create -f folding-cpu.yaml
+      # patch to one replica
+      - run: kubectl patch deployment fah-cpu -p "{\"spec\":{\"replicas\":1}}"
+      # patch to use image we just built
+      - run: |
+          if [ -n "$CIRCLE_PR_USERNAME" ]; then
+            kubectl patch deployment fah-cpu -p "{\"spec\":{\"template\":{\"spec\":{\"containers\":[{\"name\":\"fah-cpu\",\"image\":\"ghcr.io/$CIRCLE_PR_USERNAME/$CIRCLE_PR_REPONAME:$CIRCLE_BRANCH\"}]}}}}";
+            kubectl patch deployment fah-cpu -p "{\"spec\":{\"template\":{\"spec\":{\"initContainers\":[{\"name\":\"copy-config\",\"image\":\"ghcr.io/$CIRCLE_PR_USERNAME/$CIRCLE_PR_REPONAME:$CIRCLE_BRANCH\"}]}}}}";
+          else
+            kubectl patch deployment fah-cpu -p "{\"spec\":{\"template\":{\"spec\":{\"containers\":[{\"name\":\"fah-cpu\",\"image\":\"ghcr.io/$CIRCLE_USERNAME/$CIRCLE_PROJECT_REPONAME:$CIRCLE_BRANCH\"}]}}}}";
+            kubectl patch deployment fah-cpu -p "{\"spec\":{\"template\":{\"spec\":{\"initContainers\":[{\"name\":\"copy-config\",\"image\":\"ghcr.io/$CIRCLE_USERNAME/$CIRCLE_PROJECT_REPONAME:$CIRCLE_BRANCH\"}]}}}}";
+          fi
+      - run: kubectl get deployment/fah-cpu -o yaml
+      - run: kubectl rollout status deployment fah-cpu --timeout=300s; kubectl describe deployment fah-cpu; kubectl describe pods -l app=fah-cpu
+      - run: kubectl get deployment/fah-cpu -o yaml
+      - run: kubectl get pods -oyaml
+      #  print out uname to verify architecture in pod's container is amd64
+      - run: kubectl exec deployment/fah-cpu -- /bin/sh -c "uname -a"
+
+# Invoke jobs via workflows
+# See: https://circleci.com/docs/2.0/configuration-reference/#workflows
+workflows:
+  arm64-e2e-workflow:
+    jobs:
+      - arm64-e2e

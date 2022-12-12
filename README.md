@@ -1,5 +1,5 @@
-# k8s-fah
-**Run folding@home on Kubernetes**.
+# k8s-fah [![Docker](https://github.com/richstokes/k8s-fah/actions/workflows/docker-publish.yml/badge.svg)](https://github.com/richstokes/k8s-fah/actions/workflows/docker-publish.yml) [![Travis-CI Status](https://app.travis-ci.com/richstokes/k8s-fah.svg?branch=master)](https://app.travis-ci.com/richstokes/k8s-fah) [![CircleCI](https://dl.circleci.com/status-badge/img/gh/richstokes/k8s-fah/tree/master.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/richstokes/k8s-fah/tree/master)
+**Run folding@home on Kubernetes**. 
 
 The folding@home project [added support](https://foldingathome.org/2020/02/27/foldinghome-takes-up-the-fight-against-covid-19-2019-ncov/) for the Corona virus (2019-nCoV). 
 
